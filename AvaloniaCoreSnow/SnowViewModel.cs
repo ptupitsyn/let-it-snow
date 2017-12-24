@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
@@ -28,8 +29,35 @@ namespace AvaloniaCoreSnow
             Task.Run(() => MoveFlakes());
         }
 
+        public WritableBitmap Bitmap { get; }
+
+        public int FlakeCount
+        {
+            get => _flakeCount;
+            set
+            {
+                _flakeCount = value;
+                OnPropertyChanged(nameof(FlakeCount));
+            }
+        }
+
+        public unsafe void PutPixel(double x, double y, Color color)
+        {
+            // Convert relative to absolute.
+            var px = (uint) (x * Bitmap.PixelWidth);
+            var py = (uint) (y * Bitmap.PixelHeight);
+
+            using (var buf = Bitmap.Lock())
+            {
+                var ptr = (uint*) buf.Address;
+                ptr += (uint) (Bitmap.PixelWidth * py + px);
+                *ptr = uint.MaxValue;
+            }
+        }
+
         private static unsafe WritableBitmap InitBitmap(int width, int height)
         {
+            // Bgra8888 is device-native and much faster.
             var bmp = new WritableBitmap(width, height, PixelFormat.Bgra8888);
 
             // Draw on bottom line.
@@ -47,18 +75,6 @@ namespace AvaloniaCoreSnow
             }
 
             return bmp;
-        }
-
-        public WritableBitmap Bitmap { get; }
-
-        public int FlakeCount
-        {
-            get => _flakeCount;
-            set
-            {
-                _flakeCount = value;
-                OnPropertyChanged(nameof(FlakeCount));
-            }
         }
 
         private void InitFlakes()
@@ -92,7 +108,7 @@ namespace AvaloniaCoreSnow
             {
                 var bmp = Bitmap;
                 var w = bmp.PixelWidth;
-                var h = bmp.PixelHeight;
+
                 using (var buf = bmp.Lock())
                 {
                     var ptr = (uint*) buf.Address;
