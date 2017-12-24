@@ -60,6 +60,7 @@ namespace AvaloniaCoreSnow
             f.Color = GetGray((byte) (tone + 50));
             f.X = (short) _rnd.Next(Bitmap.PixelWidth);
             f.Speed = tone;
+            f.Y = 0;
         }
 
         private unsafe void MoveFlakes()
@@ -85,18 +86,42 @@ namespace AvaloniaCoreSnow
                         {
                             var oldPtr = ptr + w * f.Y + f.X;
                             var newPtr = oldPtr + w;
+                            
+                            var oldAlphaPtr = (byte*) oldPtr + 3;
+                            var newAlphaPtr = (byte*) newPtr + 3;
 
                             // Draw new.
                             f.Y2 = (short) (f.Y2 % slowdown);
                             f.Y++;
-                            if (f.Y >= h || *newPtr >> 24 == byte.MaxValue)
+                            if (f.Y >= h)
                             {
-                                f.Y = 0;
                                 InitFlake(ref f);
                                 newPtr = ptr + w * f.Y + f.X;
 
                                 // Mark as static by updating alpha to 255.
-                                *((byte*)oldPtr + 3) = byte.MaxValue;
+                                *oldAlphaPtr = byte.MaxValue;
+                            }
+                            else if (*newAlphaPtr == byte.MaxValue)
+                            {
+                                if (*(newAlphaPtr - 4) != byte.MaxValue)
+                                {
+                                    f.X--;
+                                    newPtr--;
+                                }
+                                else if (*(newAlphaPtr + 4) != byte.MaxValue)
+                                {
+                                    f.X++;
+                                    newPtr++;
+                                }
+                                else
+                                {
+                                    InitFlake(ref f);
+                                    newPtr = ptr + w * f.Y + f.X;
+
+                                    // Mark as static by updating alpha to 255.
+                                    *oldAlphaPtr = byte.MaxValue;
+
+                                }
                             }
                             else
                             {
