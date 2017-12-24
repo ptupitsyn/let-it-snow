@@ -83,19 +83,28 @@ namespace AvaloniaCoreSnow
 
                         if (f.Y2 > slowdown)
                         {
-                            // Erase old flake.
-                            *(ptr + w * f.Y + f.X) = 0;
+                            var oldPtr = ptr + w * f.Y + f.X;
+                            var newPtr = oldPtr + w;
 
                             // Draw new.
                             f.Y2 = (short) (f.Y2 % slowdown);
                             f.Y++;
-                            if (f.Y >= h)
+                            if (f.Y >= h || *newPtr >> 24 == byte.MaxValue)
                             {
                                 f.Y = 0;
                                 InitFlake(ref f);
+                                newPtr = ptr + w * f.Y + f.X;
+
+                                // Mark as static by updating alpha to 255.
+                                *((byte*)oldPtr + 3) = byte.MaxValue;
+                            }
+                            else
+                            {
+                                // Erase old flake.
+                                *oldPtr = 0;
                             }
 
-                            *(ptr + w * f.Y + f.X) = f.Color;
+                            *newPtr = f.Color;
                         }
                     }
                 }
@@ -108,7 +117,7 @@ namespace AvaloniaCoreSnow
 
         private uint GetGray(byte tone)
         {
-            return (uint) (tone | tone << 8 | tone << 16 | 0xFF000000);
+            return (uint) (tone | tone << 8 | tone << 16 | 0xFE000000);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

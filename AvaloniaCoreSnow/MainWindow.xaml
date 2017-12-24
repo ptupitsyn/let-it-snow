@@ -1,4 +1,4 @@
 ﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300" Title=".NET Core Snow Demo"
         Background="Black">
-    <Image Source="{Binding Bitmap}" />
+    <Image Source="{Binding Bitmap}" Stretch="Fill" />
 </Window>
