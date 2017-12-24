@@ -41,17 +41,30 @@ namespace AvaloniaCoreSnow
             }
         }
 
-        public unsafe void PutPixel(double x, double y, Color color)
+        public unsafe void PutPixel(double x, double y, Color color, int size)
         {
             // Convert relative to absolute.
-            var px = (uint) (x * Bitmap.PixelWidth);
-            var py = (uint) (y * Bitmap.PixelHeight);
+            var width = Bitmap.PixelWidth;
+            var height = Bitmap.PixelHeight;
 
-            using (var buf = Bitmap.Lock())
+            var px = (int) (x * width);
+            var py = (int) (y * height);
+
+            var pixel = color.B + ((uint) color.G << 8) + ((uint) color.R << 16) + ((uint) byte.MaxValue << 24);
+
+            for (var x0 = px - size; x0 <= px + size; x0++)
+            for (var y0 = py - size; y0 <= py + size; y0++)
             {
-                var ptr = (uint*) buf.Address;
-                ptr += (uint) (Bitmap.PixelWidth * py + px);
-                *ptr = uint.MaxValue;
+                if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
+                {
+                    using (var buf = Bitmap.Lock())
+                    {
+                        var ptr = (uint*) buf.Address;
+                        ptr += (uint) (width * y0 + x0);
+
+                        *ptr = pixel;
+                    }
+                }
             }
         }
 

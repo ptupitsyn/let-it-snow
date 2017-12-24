@@ -35,7 +35,7 @@ namespace AvaloniaCoreSnow
                 var x = pos.X / img.Bounds.Width;
                 var y = pos.Y / img.Bounds.Height;
 
-                _viewModel.PutPixel(x, y, Colors.Red);
+                _viewModel.PutPixel(x, y, Colors.Red, 2);
             }
         }
     }
