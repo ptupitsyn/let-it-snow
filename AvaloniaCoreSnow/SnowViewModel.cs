@@ -135,8 +135,11 @@ namespace AvaloniaCoreSnow
                         if (f.Y2 > slowdown)
                         {
                             var oldPtr = ptr + w * f.Y + f.X;
+
+                            // Erase old flake.
+                            *oldPtr = 0;
+
                             var newPtr = oldPtr + w;
-                            
                             var newAlphaPtr = (byte*) newPtr + 3;
 
                             // Check snow below us.
@@ -157,9 +160,10 @@ namespace AvaloniaCoreSnow
                                     InitFlake(ref f);
                                     newPtr = ptr + w * f.Y + f.X;
 
-                                    // Mark as static by updating alpha to 255.
-                                    var oldAlphaPtr = (byte*)oldPtr + 3;
-                                    *oldAlphaPtr = byte.MaxValue;
+                                    // Mark as static by setting alpha to 255.
+                                    // Make persistent color lighter.
+                                    var clr = byte.MaxValue * 0.8 + f.Speed * 0.2;
+                                    *oldPtr = GetGray((byte) clr) | 0xFF000000;
                                 }
                             }
                             else
@@ -167,9 +171,6 @@ namespace AvaloniaCoreSnow
                                 // Move.
                                 f.Y2 = (short)(f.Y2 % slowdown);
                                 f.Y++;
-
-                                // Erase old flake.
-                                *oldPtr = 0;
                             }
 
                             *newPtr = f.Color;
