@@ -22,11 +22,31 @@ namespace AvaloniaCoreSnow
         {
             _invalidate = invalidate;
 
-            // TODO: Pixel format affects perf?
-            Bitmap = new WritableBitmap(640, 480, PixelFormat.Bgra8888);
+            Bitmap = InitBitmap(640, 480);
 
             InitFlakes();
             Task.Run(() => MoveFlakes());
+        }
+
+        private static unsafe WritableBitmap InitBitmap(int width, int height)
+        {
+            var bmp = new WritableBitmap(width, height, PixelFormat.Bgra8888);
+
+            // Draw on bottom line.
+            using (var buf = bmp.Lock())
+            {
+                var ptr = (uint*) buf.Address;
+                ptr += width * (height - 1);
+
+                for (var i = 0; i < width; i++)
+                {
+                    *ptr = uint.MaxValue;
+                    ptr++;
+                }
+
+            }
+
+            return bmp;
         }
 
         public WritableBitmap Bitmap { get; }
@@ -61,6 +81,7 @@ namespace AvaloniaCoreSnow
             f.X = (short) _rnd.Next(Bitmap.PixelWidth);
             f.Speed = tone;
             f.Y = 0;
+            f.Y2 = 0;
         }
 
         private unsafe void MoveFlakes()
@@ -87,28 +108,17 @@ namespace AvaloniaCoreSnow
                             var oldPtr = ptr + w * f.Y + f.X;
                             var newPtr = oldPtr + w;
                             
-                            var oldAlphaPtr = (byte*) oldPtr + 3;
                             var newAlphaPtr = (byte*) newPtr + 3;
 
-                            // Draw new.
-                            f.Y2 = (short) (f.Y2 % slowdown);
-                            f.Y++;
-                            if (f.Y >= h)
+                            // Check snow below us.
+                            if (*newAlphaPtr == byte.MaxValue)
                             {
-                                InitFlake(ref f);
-                                newPtr = ptr + w * f.Y + f.X;
-
-                                // Mark as static by updating alpha to 255.
-                                *oldAlphaPtr = byte.MaxValue;
-                            }
-                            else if (*newAlphaPtr == byte.MaxValue)
-                            {
-                                if (*(newAlphaPtr - 4) != byte.MaxValue)
+                                if (f.X > 0 && *(newAlphaPtr - 4) != byte.MaxValue)
                                 {
                                     f.X--;
                                     newPtr--;
                                 }
-                                else if (*(newAlphaPtr + 4) != byte.MaxValue)
+                                else if (f.X + 1 < w && *(newAlphaPtr + 4) != byte.MaxValue)
                                 {
                                     f.X++;
                                     newPtr++;
@@ -119,12 +129,16 @@ namespace AvaloniaCoreSnow
                                     newPtr = ptr + w * f.Y + f.X;
 
                                     // Mark as static by updating alpha to 255.
+                                    var oldAlphaPtr = (byte*)oldPtr + 3;
                                     *oldAlphaPtr = byte.MaxValue;
-
                                 }
                             }
                             else
                             {
+                                // Move.
+                                f.Y2 = (short)(f.Y2 % slowdown);
+                                f.Y++;
+
                                 // Erase old flake.
                                 *oldPtr = 0;
                             }
@@ -140,7 +154,7 @@ namespace AvaloniaCoreSnow
             // ReSharper disable once FunctionNeverReturns
         }
 
-        private uint GetGray(byte tone)
+        private static uint GetGray(byte tone)
         {
             return (uint) (tone | tone << 8 | tone << 16 | 0xFE000000);
         }
