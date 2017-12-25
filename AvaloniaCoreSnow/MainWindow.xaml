@@ -15,6 +15,7 @@
         <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="80">
             <Button Content="Reset" Command="{Binding ResetCommand}" />
             <Slider Value="{Binding DelayMs, Mode=TwoWay}" Minimum="0" Maximum="15" />
+            <Slider Value="{Binding FlakeCount, Mode=TwoWay}" Minimum="500" Maximum="9000" TickFrequency="1000" />
         </StackPanel>
     </Grid>
 

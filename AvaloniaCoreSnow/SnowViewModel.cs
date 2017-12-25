@@ -43,7 +43,7 @@ namespace AvaloniaCoreSnow
             get => _flakeCount;
             set
             {
-                _flakeCount = value;
+                ResizeFlakes(value);
                 OnPropertyChanged(nameof(FlakeCount));
             }
         }
@@ -87,7 +87,6 @@ namespace AvaloniaCoreSnow
         {
             InitFlakes();
             ResetBitmap();
-            DelayMs = 10;
         }
 
         private void InitFlakes()
@@ -110,6 +109,40 @@ namespace AvaloniaCoreSnow
             f.Speed = tone;
             f.Y = 0;
             f.Y2 = 0;
+        }
+
+        private unsafe void ResizeFlakes(int newCount)
+        {
+            using (var buf = Bitmap.Lock())
+            {
+                var ptr = (uint*)buf.Address;
+                var old = _flakes;
+                var oldCount = _flakeCount;
+                _flakes = new Flake[newCount];
+
+                if (newCount < oldCount)
+                {
+                    // Remove extra flakes, trim array.
+                    for (var i = newCount; i < oldCount; i++)
+                    {
+                        *(ptr + old[i].X + old[i].Y * Bitmap.PixelWidth) = 0;
+                    }
+
+                    Array.Copy(old, _flakes, newCount);
+                }
+                else
+                {
+                    // Add more flakes.
+                    Array.Copy(old, _flakes, oldCount);
+
+                    for (var i = oldCount; i < newCount; i++)
+                    {
+                        InitFlake(ref _flakes[i]);
+                    }
+                }
+            }
+
+            _flakeCount = newCount;
         }
 
         private unsafe void ResetBitmap()
@@ -146,9 +179,11 @@ namespace AvaloniaCoreSnow
                 {
                     var ptr = (uint*) buf.Address;
 
-                    for (var i = 0; i < _flakes.Length; i++)
+                    var flakes = _flakes;
+
+                    for (var i = 0; i < flakes.Length; i++)
                     {
-                        MoveFlake(ref _flakes[i], ptr, w);
+                        MoveFlake(ref flakes[i], ptr, w);
                     }
                 }
 
