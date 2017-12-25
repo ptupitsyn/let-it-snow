@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -23,9 +24,11 @@ namespace AvaloniaCoreSnow
         {
             _invalidate = invalidate;
 
-            Bitmap = InitBitmap(640, 480);
+            ResetCommand = new DelegateCommand(Reset);
 
-            InitFlakes();
+            // Bgra8888 is device-native and much faster.
+            Bitmap = new WritableBitmap(640, 480, PixelFormat.Bgra8888);
+            Reset();
             Task.Run(() => MoveFlakes());
         }
 
@@ -40,6 +43,8 @@ namespace AvaloniaCoreSnow
                 OnPropertyChanged(nameof(FlakeCount));
             }
         }
+
+        public ICommand ResetCommand { get; }
 
         public unsafe void PutPixel(double x, double y, Color color, int size)
         {
@@ -68,26 +73,10 @@ namespace AvaloniaCoreSnow
             }
         }
 
-        private static unsafe WritableBitmap InitBitmap(int width, int height)
+        private void Reset()
         {
-            // Bgra8888 is device-native and much faster.
-            var bmp = new WritableBitmap(width, height, PixelFormat.Bgra8888);
-
-            // Draw on bottom line.
-            using (var buf = bmp.Lock())
-            {
-                var ptr = (uint*) buf.Address;
-                ptr += width * (height - 1);
-
-                for (var i = 0; i < width; i++)
-                {
-                    *ptr = uint.MaxValue;
-                    ptr++;
-                }
-
-            }
-
-            return bmp;
+            InitFlakes();
+            ResetBitmap();
         }
 
         private void InitFlakes()
@@ -111,6 +100,29 @@ namespace AvaloniaCoreSnow
             f.Speed = tone;
             f.Y = 0;
             f.Y2 = 0;
+        }
+
+        private unsafe void ResetBitmap()
+        {
+            using (var buf = Bitmap.Lock())
+            {
+                var ptr = (uint*)buf.Address;
+
+                var w = Bitmap.PixelWidth;
+                var h = Bitmap.PixelHeight;
+
+                // Clear.
+                for (var i = 0; i < w * (h - 1); i++)
+                {
+                    *(ptr + i) = 0;
+                }
+
+                // Draw bottom line.
+                for (var i = w * (h - 1); i < w * h ; i++)
+                {
+                    *(ptr + i) = uint.MaxValue;
+                }
+            }
         }
 
         private unsafe void MoveFlakes()

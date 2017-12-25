@@ -3,11 +3,11 @@
     <Grid>
         <Image Source="{Binding Bitmap}" Stretch="Fill" MinWidth="640" MinHeight="480" />
 
-        <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.5">
-            <Button Content="Reset" />
+        <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.5" MinWidth="80">
+            <Button Content="Reset" Command="{Binding ResetCommand}" />
             <Slider />
         </StackPanel>
     </Grid>
 
-    <!-- TODO: Color picker, delay slider, reset button, save image, load background. -->
+    <!-- TODO: Color picker, delay slider, reset button, save image, load background, flake count -->
 </Window>
