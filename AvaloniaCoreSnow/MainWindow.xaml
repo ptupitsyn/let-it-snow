@@ -14,7 +14,7 @@
 
         <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="80">
             <Button Content="Reset" Command="{Binding ResetCommand}" />
-            <Slider />
+            <Slider Value="{Binding DelayMs, Mode=TwoWay}" Minimum="0" Maximum="15" />
         </StackPanel>
     </Grid>
 

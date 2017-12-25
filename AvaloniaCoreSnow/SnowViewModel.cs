@@ -19,6 +19,7 @@ namespace AvaloniaCoreSnow
         private readonly Random _rnd = new Random();
         
         private readonly Action _invalidate;
+        private int _delayMs = 10;
 
         public SnowViewModel(Action invalidate)
         {
@@ -42,6 +43,12 @@ namespace AvaloniaCoreSnow
                 _flakeCount = value;
                 OnPropertyChanged(nameof(FlakeCount));
             }
+        }
+
+        public int DelayMs
+        {
+            get { return _delayMs; }
+            set { _delayMs = value; OnPropertyChanged(nameof(DelayMs)); }
         }
 
         public ICommand ResetCommand { get; }
@@ -77,6 +84,7 @@ namespace AvaloniaCoreSnow
         {
             InitFlakes();
             ResetBitmap();
+            DelayMs = 10;
         }
 
         private void InitFlakes()
@@ -143,7 +151,7 @@ namespace AvaloniaCoreSnow
                 }
 
                 _invalidate();
-                Thread.Sleep(10);
+                Thread.Sleep(DelayMs);
             }
             // ReSharper disable once FunctionNeverReturns
         }
