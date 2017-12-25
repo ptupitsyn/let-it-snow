@@ -12,6 +12,8 @@ namespace AvaloniaCoreSnow
 {
     public class SnowViewModel : INotifyPropertyChanged
     {
+        private const byte MaxSpeed = 200;
+
         private int _flakeCount = 3000;
 
         private Flake[] _flakes;
@@ -19,6 +21,7 @@ namespace AvaloniaCoreSnow
         private readonly Random _rnd = new Random();
         
         private readonly Action _invalidate;
+
         private int _delayMs = 10;
 
         public SnowViewModel(Action invalidate)
@@ -47,7 +50,7 @@ namespace AvaloniaCoreSnow
 
         public int DelayMs
         {
-            get { return _delayMs; }
+            get => _delayMs;
             set { _delayMs = value; OnPropertyChanged(nameof(DelayMs)); }
         }
 
@@ -102,8 +105,7 @@ namespace AvaloniaCoreSnow
 
         private void InitFlake(ref Flake f)
         {
-            var tone = (byte) _rnd.Next(200);
-            f.Color = GetGray((byte) (tone + 50));
+            var tone = (byte) _rnd.Next(MaxSpeed);
             f.X = (short) _rnd.Next(Bitmap.PixelWidth);
             f.Speed = tone;
             f.Y = 0;
@@ -198,17 +200,20 @@ namespace AvaloniaCoreSnow
 
                     // Mark as static by setting alpha to 255.
                     // Make persistent color lighter.
-                    var clr = byte.MaxValue * 0.8 + f.Speed * 0.2;
+                    var clr = MaxSpeed * 0.8 + f.Speed * 0.2;
                     *oldPtr = GetGray((byte) clr) | 0xFF000000;
                 }
             }
 
-            *newPtr = f.Color;
+            *newPtr = GetGray(f.Speed);
         }
 
         private static uint GetGray(byte tone)
         {
-            return (uint) (tone | tone << 8 | tone << 16 | 0xFE000000);
+            var c = (byte) (byte.MaxValue - MaxSpeed + tone);
+
+            // Non-max alpha indicates moving pixel.
+            return (uint) (c | c << 8 | c << 16 | 0xFE000000);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -223,7 +228,6 @@ namespace AvaloniaCoreSnow
             public short X;
             public short Y;
             public short Y2;
-            public uint Color;
             public byte Speed;
         }
     }
