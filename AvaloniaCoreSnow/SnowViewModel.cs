@@ -141,6 +141,10 @@ namespace AvaloniaCoreSnow
 
                             var newPtr = oldPtr + w;
                             var newAlphaPtr = (byte*) newPtr + 3;
+                            
+                            // Move.
+                            f.Y2 = (short)(f.Y2 % slowdown);
+                            f.Y++;
 
                             // Check snow below us.
                             if (*newAlphaPtr == byte.MaxValue)
@@ -165,12 +169,6 @@ namespace AvaloniaCoreSnow
                                     var clr = byte.MaxValue * 0.8 + f.Speed * 0.2;
                                     *oldPtr = GetGray((byte) clr) | 0xFF000000;
                                 }
-                            }
-                            else
-                            {
-                                // Move.
-                                f.Y2 = (short)(f.Y2 % slowdown);
-                                f.Y++;
                             }
 
                             *newPtr = f.Color;
