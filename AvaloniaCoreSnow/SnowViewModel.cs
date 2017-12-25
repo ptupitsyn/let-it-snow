@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -62,7 +63,15 @@ namespace AvaloniaCoreSnow
 
         public ICommand ResetCommand { get; }
 
-        public unsafe void PutPixel(double x, double y, Color color, int size)
+        public IEnumerable<Color> Brushes => new[]
+        {
+            Colors.Red, Colors.Orange, Colors.Yellow, Colors.Green, Colors.Cyan, Colors.Blue,
+            Color.FromArgb(250, 0, 0, 0)
+        };
+
+        public Color SelectedBrush { get; set; } = Colors.Red;
+
+        public unsafe void PutPixel(double x, double y, int size)
         {
             // Convert relative to absolute.
             var width = Bitmap.PixelWidth;
@@ -71,7 +80,8 @@ namespace AvaloniaCoreSnow
             var px = (int) (x * width);
             var py = (int) (y * height);
 
-            var pixel = color.B + ((uint) color.G << 8) + ((uint) color.R << 16) + ((uint) byte.MaxValue << 24);
+            var c = SelectedBrush;
+            var pixel = c.B + ((uint) c.G << 8) + ((uint) c.R << 16) + ((uint) byte.MaxValue << 24);
 
             for (var x0 = px - size; x0 <= px + size; x0++)
             for (var y0 = py - size; y0 <= py + size; y0++)
