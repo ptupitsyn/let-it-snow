@@ -81,7 +81,7 @@ namespace AvaloniaCoreSnow
             var py = (int) (y * height);
 
             var c = SelectedBrush;
-            var pixel = c.B + ((uint) c.G << 8) + ((uint) c.R << 16) + ((uint) byte.MaxValue << 24);
+            var pixel = c.B + ((uint) c.G << 8) + ((uint) c.R << 16) + ((uint) c.A << 24);
 
             for (var x0 = px - size; x0 <= px + size; x0++)
             for (var y0 = py - size; y0 <= py + size; y0++)
