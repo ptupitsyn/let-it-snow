@@ -48,11 +48,17 @@ namespace AvaloniaCoreSnow
             }
         }
 
-        public int DelayMs
+        public int DelayMsInverted
         {
-            get => _delayMs;
-            set { _delayMs = value; OnPropertyChanged(nameof(DelayMs)); }
+            get => MaxDelay - _delayMs;
+            set
+            {
+                _delayMs = MaxDelay - value;
+                OnPropertyChanged(nameof(DelayMsInverted));
+            }
         }
+
+        public int MaxDelay => 15;
 
         public ICommand ResetCommand { get; }
 
@@ -188,7 +194,7 @@ namespace AvaloniaCoreSnow
                 }
 
                 _invalidate();
-                Thread.Sleep(DelayMs);
+                Thread.Sleep(_delayMs);
             }
             // ReSharper disable once FunctionNeverReturns
         }
