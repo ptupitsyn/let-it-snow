@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -22,7 +23,7 @@ namespace AvaloniaCoreSnow
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            ((Image) Content).PointerMoved += Image_PointerMoved;
+            ((Grid) Content).Children.First().PointerMoved += Image_PointerMoved;
         }
 
         private void Image_PointerMoved(object sender, PointerEventArgs e)

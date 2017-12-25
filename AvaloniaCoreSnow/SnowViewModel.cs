@@ -115,7 +115,6 @@ namespace AvaloniaCoreSnow
 
         private unsafe void MoveFlakes()
         {
-
             while (true)
             {
                 var bmp = Bitmap;

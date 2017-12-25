@@ -1,4 +1,13 @@
-﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300" Title=".NET Core Snow Demo"
+﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="640" MinHeight="500" Title=".NET Core Snow Demo"
         Background="Black">
-    <Image Source="{Binding Bitmap}" Stretch="Fill" />
+    <Grid>
+        <Image Source="{Binding Bitmap}" Stretch="Fill" MinWidth="640" MinHeight="480" />
+
+        <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.5">
+            <Button Content="Reset" />
+            <Slider />
+        </StackPanel>
+    </Grid>
+
+    <!-- TODO: Color picker, delay slider, reset button, save image, load background. -->
 </Window>
