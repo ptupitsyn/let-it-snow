@@ -115,7 +115,6 @@ namespace AvaloniaCoreSnow
 
         private unsafe void MoveFlakes()
         {
-            const short slowdown = 200;
 
             while (true)
             {
@@ -128,51 +127,7 @@ namespace AvaloniaCoreSnow
 
                     for (var i = 0; i < _flakes.Length; i++)
                     {
-                        ref var f = ref _flakes[i];
-
-                        f.Y2 += f.Speed;
-
-                        if (f.Y2 > slowdown)
-                        {
-                            var oldPtr = ptr + w * f.Y + f.X;
-
-                            // Erase old flake.
-                            *oldPtr = 0;
-
-                            var newPtr = oldPtr + w;
-                            var newAlphaPtr = (byte*) newPtr + 3;
-                            
-                            // Move.
-                            f.Y2 = (short)(f.Y2 % slowdown);
-                            f.Y++;
-
-                            // Check snow below us.
-                            if (*newAlphaPtr == byte.MaxValue)
-                            {
-                                if (f.X > 0 && *(newAlphaPtr - 4) != byte.MaxValue)
-                                {
-                                    f.X--;
-                                    newPtr--;
-                                }
-                                else if (f.X + 1 < w && *(newAlphaPtr + 4) != byte.MaxValue)
-                                {
-                                    f.X++;
-                                    newPtr++;
-                                }
-                                else
-                                {
-                                    InitFlake(ref f);
-                                    newPtr = ptr + w * f.Y + f.X;
-
-                                    // Mark as static by setting alpha to 255.
-                                    // Make persistent color lighter.
-                                    var clr = byte.MaxValue * 0.8 + f.Speed * 0.2;
-                                    *oldPtr = GetGray((byte) clr) | 0xFF000000;
-                                }
-                            }
-
-                            *newPtr = f.Color;
-                        }
+                        MoveFlake(ref _flakes[i], ptr, w);
                     }
                 }
 
@@ -180,6 +135,56 @@ namespace AvaloniaCoreSnow
                 Thread.Sleep(10);
             }
             // ReSharper disable once FunctionNeverReturns
+        }
+
+        private unsafe void MoveFlake(ref Flake f, uint* ptr, int width)
+        {
+            f.Y2 += f.Speed;
+
+            const short slowdown = 200;
+            if (f.Y2 < slowdown)
+            {
+                return;
+            }
+
+            // Erase old flake.
+            var oldPtr = ptr + width * f.Y + f.X;
+            *oldPtr = 0;
+
+            // New position.
+            f.Y2 = (short)(f.Y2 % slowdown);
+            f.Y++;
+            var newPtr = oldPtr + width;
+            var newAlphaPtr = (byte*) newPtr + 3;
+
+            // Check snow below us.
+            if (*newAlphaPtr == byte.MaxValue)
+            {
+                // Check pixels to the left or to the right: we might be on a slope.
+                if (f.X > 0 && *(newAlphaPtr - 4) != byte.MaxValue)
+                {
+                    f.X--;
+                    newPtr--;
+                }
+                else if (f.X + 1 < width && *(newAlphaPtr + 4) != byte.MaxValue)
+                {
+                    f.X++;
+                    newPtr++;
+                }
+                else
+                {
+                    // Not on a slope, stop here and preserve the pixel.
+                    InitFlake(ref f);
+                    newPtr = ptr + width * f.Y + f.X;
+
+                    // Mark as static by setting alpha to 255.
+                    // Make persistent color lighter.
+                    var clr = byte.MaxValue * 0.8 + f.Speed * 0.2;
+                    *oldPtr = GetGray((byte) clr) | 0xFF000000;
+                }
+            }
+
+            *newPtr = f.Color;
         }
 
         private static uint GetGray(byte tone)
