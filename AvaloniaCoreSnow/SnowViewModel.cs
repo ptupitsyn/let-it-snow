@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -12,7 +10,7 @@ using SixLabors.ImageSharp;
 
 namespace AvaloniaCoreSnow
 {
-    public class SnowViewModel : INotifyPropertyChanged
+    public class SnowViewModel
     {
         private const byte MaxSpeed = 200;
 
@@ -43,21 +41,13 @@ namespace AvaloniaCoreSnow
         public int FlakeCount
         {
             get => _flakeCount;
-            set
-            {
-                ResizeFlakes(value);
-                OnPropertyChanged(nameof(FlakeCount));
-            }
+            set => ResizeFlakes(value);
         }
 
         public int DelayMsInverted
         {
             get => MaxDelay - _delayMs;
-            set
-            {
-                _delayMs = MaxDelay - value;
-                OnPropertyChanged(nameof(DelayMsInverted));
-            }
+            set => _delayMs = MaxDelay - value;
         }
 
         public int MaxDelay => 15;
@@ -312,13 +302,6 @@ namespace AvaloniaCoreSnow
 
             // Non-max alpha indicates moving pixel.
             return (uint) (c | c << 8 | c << 16 | 0xFE000000);
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private struct Flake
