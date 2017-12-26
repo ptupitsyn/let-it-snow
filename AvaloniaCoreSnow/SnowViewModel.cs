@@ -110,7 +110,7 @@ namespace AvaloniaCoreSnow
             var px = (int)(x * width);
             var py = (int)(y * height);
 
-            using (var img = Image.Load<Bgra32>(fileName))
+            using (var img = Image.Load(fileName))
             using (var buf = Bitmap.Lock())
             {
                 var w = Math.Min(width - px, img.Width);
@@ -121,7 +121,14 @@ namespace AvaloniaCoreSnow
                 for (var i = 0; i < w; i++)
                 for (var j = 0; j < h; j++)
                 {
-                    *(ptr + (j + py) * width + i + px) = img[i, j].PackedValue;
+                    var pix = img[i, j];
+
+                    // Alpha threshold: transparent pixels don't work with snow logic.
+                    if (pix.A > 200)
+                    {
+                        var pixPtr = ptr + (j + py) * width + i + px;
+                        *pixPtr = (uint) (pix.B | pix.G << 8 | pix.R << 16 | byte.MaxValue << 24);
+                    }
                 }
             }
         }
