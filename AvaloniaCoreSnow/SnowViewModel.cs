@@ -9,7 +9,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace AvaloniaCoreSnow
 {
@@ -118,6 +117,20 @@ namespace AvaloniaCoreSnow
 
                 var ptr = (uint*)buf.Address;
 
+                // Move snow out of the picture rectangle.
+                for (var i = 0; i < _flakes.Length; i++)
+                {
+                    ref var f = ref _flakes[i];
+
+                    if (f.X > px && f.Y > py && f.X < px + w && f.Y < py + h)
+                    {
+                        // Clear pixel and reset flake to top.
+                        *(ptr + f.Y * width + f.X) = 0;
+                        InitFlake(ref f);
+                    }
+                }
+
+                // Load picture.
                 for (var i = 0; i < w; i++)
                 for (var j = 0; j < h; j++)
                 {
