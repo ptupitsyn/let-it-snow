@@ -8,6 +8,8 @@ using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace AvaloniaCoreSnow
 {
@@ -83,18 +85,43 @@ namespace AvaloniaCoreSnow
             var c = SelectedBrush;
             var pixel = c.B + ((uint) c.G << 8) + ((uint) c.R << 16) + ((uint) c.A << 24);
 
-            for (var x0 = px - size; x0 <= px + size; x0++)
-            for (var y0 = py - size; y0 <= py + size; y0++)
+            using (var buf = Bitmap.Lock())
             {
-                if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
+                for (var x0 = px - size; x0 <= px + size; x0++)
+                for (var y0 = py - size; y0 <= py + size; y0++)
                 {
-                    using (var buf = Bitmap.Lock())
+                    if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
                     {
                         var ptr = (uint*) buf.Address;
                         ptr += (uint) (width * y0 + x0);
 
                         *ptr = pixel;
                     }
+                }
+            }
+        }
+
+        public unsafe void LoadFile(string fileName, double x, double y)
+        {
+            // Convert relative to absolute.
+            var width = Bitmap.PixelWidth;
+            var height = Bitmap.PixelHeight;
+
+            var px = (int)(x * width);
+            var py = (int)(y * height);
+
+            using (var img = Image.Load<Bgra32>(fileName))
+            using (var buf = Bitmap.Lock())
+            {
+                var w = Math.Min(width - px, img.Width);
+                var h = Math.Min(height - py, img.Height);
+
+                var ptr = (uint*)buf.Address;
+
+                for (var i = 0; i < w; i++)
+                for (var j = 0; j < h; j++)
+                {
+                    *(ptr + (j + py) * width + i + px) = img[i, j].PackedValue;
                 }
             }
         }

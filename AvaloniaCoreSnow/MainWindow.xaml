@@ -1,14 +1,5 @@
 ﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="640" MinHeight="500" Title=".NET Core Snow Demo"
         Background="Black">
-    <!--<Window.Styles>
-        <Style Selector="StackPanel">
-            <Setter Property="StackPanel.Opacity" Value="0.2" />
-        </Style>
-        <Style Selector="StackPanel:pointerover">
-            <Setter Property="StackPanel.Opacity" Value="0.9" />
-        </Style>
-    </Window.Styles>-->
-
     <Grid>
         <Image Source="{Binding Bitmap}" Stretch="Fill" MinWidth="640" MinHeight="480" />
 
@@ -49,6 +40,4 @@
             </ListBox>
         </StackPanel>
     </Grid>
-
-    <!-- TODO: Color picker -->
 </Window>
