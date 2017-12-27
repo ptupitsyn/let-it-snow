@@ -1,7 +1,7 @@
-﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="640" MinHeight="500" Title=".NET Core Snow Demo"
-        Background="Black">
-    <Grid>
-        <Image Source="{Binding Bitmap}" Stretch="Fill" MinWidth="640" MinHeight="480" Cursor="Hand" />
+﻿<Window xmlns="https://github.com/avaloniaui" Title=".NET Core Snow Demo"
+        Background="Black" MinWidth="640" MinHeight="480" Width="640" Height="480">
+    <Grid MinWidth="640" MinHeight="480">
+        <Image Source="{Binding Bitmap}" Stretch="Fill" Cursor="Hand" />
 
         <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Background="#AA000000">
             <Button Command="{Binding ResetCommand}" Margin="5" Background="Transparent">
