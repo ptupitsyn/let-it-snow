@@ -50,7 +50,7 @@ namespace AvaloniaCoreSnow
             set => _delayMs = MaxDelay - value;
         }
 
-        public int MaxDelay => 15;
+        public int MaxDelay => 16;
 
         public ICommand ResetCommand { get; }
 
@@ -225,22 +225,27 @@ namespace AvaloniaCoreSnow
         {
             while (true)
             {
-                var bmp = Bitmap;
-                var w = bmp.PixelWidth;
-
-                using (var buf = bmp.Lock())
+                // MaxDelay means pause.
+                if (_delayMs < MaxDelay)
                 {
-                    var ptr = (uint*) buf.Address;
+                    var bmp = Bitmap;
+                    var w = bmp.PixelWidth;
 
-                    var flakes = _flakes;
-
-                    for (var i = 0; i < flakes.Length; i++)
+                    using (var buf = bmp.Lock())
                     {
-                        MoveFlake(ref flakes[i], ptr, w);
+                        var ptr = (uint*) buf.Address;
+
+                        var flakes = _flakes;
+
+                        for (var i = 0; i < flakes.Length; i++)
+                        {
+                            MoveFlake(ref flakes[i], ptr, w);
+                        }
                     }
                 }
 
                 _invalidate();
+
                 Thread.Sleep(_delayMs);
             }
             // ReSharper disable once FunctionNeverReturns
