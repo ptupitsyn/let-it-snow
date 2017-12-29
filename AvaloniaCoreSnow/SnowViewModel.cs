@@ -299,14 +299,19 @@ namespace AvaloniaCoreSnow
                 }
             } else {
                 // add x random move
-                f.X += (short) _rnd.Next(-1, 2);
-                if (f.X < 0) {
-                    f.X += (short) (Bitmap.PixelWidth - 1);
+                var fluctuatedX = f.X + _rnd.Next(-1, 2);
+                if (fluctuatedX < 0) {
+                    fluctuatedX += (short) (Bitmap.PixelWidth - 1);
                 }
-                if (f.X >= Bitmap.PixelWidth) {
-                    f.X -= (short)Bitmap.PixelWidth;
+                if (fluctuatedX >= Bitmap.PixelWidth) {
+                    fluctuatedX -= (short)Bitmap.PixelWidth;
                 }
-                newPtr = ptr + width * f.Y + f.X;
+                var fluctuatedPtr = ptr + width * f.Y + fluctuatedX;
+                var fluctuatedAlphaPtr = (byte*) fluctuatedPtr + 3;
+                if (*fluctuatedAlphaPtr != byte.MaxValue) {
+                    f.X = (short) fluctuatedX;
+                    newPtr = fluctuatedPtr;
+                }
             }
 
             *newPtr = GetGray(f.Speed);
