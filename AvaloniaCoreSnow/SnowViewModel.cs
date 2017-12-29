@@ -268,15 +268,6 @@ namespace AvaloniaCoreSnow
             // New position.
             f.Y2 = (short)(f.Y2 % slowdown);
             f.Y++;
-            
-            // add x random move
-            f.X += (short) _rnd.Next(-1, 2);
-            if (f.X < 0) {
-                f.X += (short) (Bitmap.PixelWidth - 1);
-            }
-            if (f.X >= Bitmap.PixelWidth) {
-                f.X -= (short)Bitmap.PixelWidth;
-            }
 
             var newPtr = ptr + width * f.Y + f.X;
             var newAlphaPtr = (byte*) newPtr + 3;
@@ -306,6 +297,16 @@ namespace AvaloniaCoreSnow
                     var clr = MaxSpeed * 0.8 + f.Speed * 0.2;
                     *oldPtr = GetGray((byte) clr) | 0xFF000000;
                 }
+            } else {
+                // add x random move
+                f.X += (short) _rnd.Next(-1, 2);
+                if (f.X < 0) {
+                    f.X += (short) (Bitmap.PixelWidth - 1);
+                }
+                if (f.X >= Bitmap.PixelWidth) {
+                    f.X -= (short)Bitmap.PixelWidth;
+                }
+                newPtr = ptr + width * f.Y + f.X;
             }
 
             *newPtr = GetGray(f.Speed);
