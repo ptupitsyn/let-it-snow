@@ -32,7 +32,7 @@ namespace AvaloniaCoreSnow
 
             // Delegate is called from bg thread, use synchronous call to avoid concurrency issues within Avalonia.
             _viewModel = new SnowViewModel(() =>
-                Dispatcher.UIThread.InvokeTaskAsync(() => _img.InvalidateVisual()).Wait());
+                Dispatcher.UIThread.InvokeAsync(() => _img.InvalidateVisual()).Wait());
         }
 
         private void Image_PointerMoved(object sender, PointerEventArgs e)
