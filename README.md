@@ -13,6 +13,12 @@ Cross-platform falling snow demo on .NET Core and [Avalonia UI](https://github.c
 - `dotnet run`
 
 
+## Install and Run as .NET Core Global Tool
+
+- `dotnet tool install dotnet-snow -g`
+- `dotnet-snow`
+
+
 ## Usage
 
 - Move sliders to control speed and snowflake count
