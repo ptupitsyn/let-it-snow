@@ -9,6 +9,10 @@
         <Version>1.0.1</Version>
         <Description>.NET Core Global Tool: cross-platform Avalonia-based GUI Snow demo</Description>
         <PackageTags>dotnet, global tools, snow, demo, avalonia, avaloniaui, wpf, xaml</PackageTags>
+        <RepositoryUrl>https://github.com/ptupitsyn/let-it-snow.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/ptupitsyn/let-it-snow</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/ptupitsyn/let-it-snow/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageIconUrl>https://github.com/ptupitsyn/let-it-snow/blob/master/images/package-icon.png</PackageIconUrl>
     </PropertyGroup>
     <ItemGroup>
         <Compile Update="**\*.xaml.cs">
