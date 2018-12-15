@@ -7,6 +7,8 @@
         <ToolCommandName>dotnet-snow</ToolCommandName>
         <AssemblyName>dotnet-cowsay</AssemblyName>
         <Version>1.0.1</Version>
+        <Description>.NET Core Global Tool: cross-platform Avalonia-based GUI Snow demo</Description>
+        <PackageTags>dotnet, global tools, snow, demo, avalonia, avaloniaui, wpf, xaml</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <Compile Update="**\*.xaml.cs">
