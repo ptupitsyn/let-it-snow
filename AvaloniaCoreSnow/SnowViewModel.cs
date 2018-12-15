@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -19,7 +20,7 @@ namespace AvaloniaCoreSnow
         private Flake[] _flakes;
 
         private readonly Random _rnd = new Random();
-        
+
         private readonly Action _invalidate;
 
         private int _delayMs = 10;
@@ -31,12 +32,12 @@ namespace AvaloniaCoreSnow
             ResetCommand = new DelegateCommand(Reset);
 
             // Bgra8888 is device-native and much faster.
-            Bitmap = new WritableBitmap(640, 480, PixelFormat.Bgra8888);
+            Bitmap = new WriteableBitmap(new PixelSize(640, 480), new Vector(96, 96), PixelFormat.Bgra8888);
             Reset();
             Task.Run(() => MoveFlakes());
         }
 
-        public WritableBitmap Bitmap { get; }
+        public WriteableBitmap Bitmap { get; }
 
         public int FlakeCount
         {
@@ -65,8 +66,8 @@ namespace AvaloniaCoreSnow
         public unsafe void PutPixel(double x, double y, int size)
         {
             // Convert relative to absolute.
-            var width = Bitmap.PixelWidth;
-            var height = Bitmap.PixelHeight;
+            var width = Bitmap.PixelSize.Width;
+            var height = Bitmap.PixelSize.Height;
 
             var px = (int) (x * width);
             var py = (int) (y * height);
@@ -93,8 +94,8 @@ namespace AvaloniaCoreSnow
         public unsafe void LoadFile(string fileName, double x, double y)
         {
             // Convert relative to absolute.
-            var width = Bitmap.PixelWidth;
-            var height = Bitmap.PixelHeight;
+            var width = Bitmap.PixelSize.Width;
+            var height = Bitmap.PixelSize.Height;
 
             var px = (int)(x * width);
             var py = (int)(y * height);
@@ -158,7 +159,7 @@ namespace AvaloniaCoreSnow
         private void InitFlake(ref Flake f)
         {
             var tone = (byte) _rnd.Next(MaxSpeed);
-            f.X = (short) _rnd.Next(Bitmap.PixelWidth);
+            f.X = (short) _rnd.Next(Bitmap.PixelSize.Width);
             f.Speed = tone;
             f.Y = 0;
             f.Y2 = 0;
@@ -178,7 +179,7 @@ namespace AvaloniaCoreSnow
                     // Remove extra flakes, trim array.
                     for (var i = newCount; i < oldCount; i++)
                     {
-                        *(ptr + old[i].X + old[i].Y * Bitmap.PixelWidth) = 0;
+                        *(ptr + old[i].X + old[i].Y * Bitmap.PixelSize.Width) = 0;
                     }
 
                     Array.Copy(old, _flakes, newCount);
@@ -204,8 +205,8 @@ namespace AvaloniaCoreSnow
             {
                 var ptr = (uint*)buf.Address;
 
-                var w = Bitmap.PixelWidth;
-                var h = Bitmap.PixelHeight;
+                var w = Bitmap.PixelSize.Width;
+                var h = Bitmap.PixelSize.Height;
 
                 // Clear.
                 for (var i = 0; i < w * (h - 1); i++)
@@ -229,7 +230,7 @@ namespace AvaloniaCoreSnow
                 if (_delayMs < MaxDelay)
                 {
                     var bmp = Bitmap;
-                    var w = bmp.PixelWidth;
+                    var w = bmp.PixelSize.Width;
 
                     using (var buf = bmp.Lock())
                     {

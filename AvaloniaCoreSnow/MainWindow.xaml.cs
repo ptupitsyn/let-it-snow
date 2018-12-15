@@ -24,7 +24,7 @@ namespace AvaloniaCoreSnow
 
         private void InitializeComponent()
         {
-            AvaloniaXamlLoaderPortableXaml.Load(this);
+            AvaloniaXamlLoader.Load(this);
 
             _img = ((Grid) Content).Children.First();
             _img.PointerMoved += Image_PointerMoved;
