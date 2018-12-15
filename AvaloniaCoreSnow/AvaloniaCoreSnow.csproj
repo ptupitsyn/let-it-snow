@@ -5,6 +5,8 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>dotnet-snow</ToolCommandName>
+        <AssemblyName>dotnet-cowsay</AssemblyName>
+        <Version>1.0.1</Version>
     </PropertyGroup>
     <ItemGroup>
         <Compile Update="**\*.xaml.cs">
