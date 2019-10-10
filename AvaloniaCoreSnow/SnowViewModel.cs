@@ -75,18 +75,16 @@ namespace AvaloniaCoreSnow
             var c = SelectedBrush;
             var pixel = c.B + ((uint) c.G << 8) + ((uint) c.R << 16) + ((uint) c.A << 24);
 
-            using (var buf = Bitmap.Lock())
+            using var buf = Bitmap.Lock();
+            for (var x0 = px - size; x0 <= px + size; x0++)
+            for (var y0 = py - size; y0 <= py + size; y0++)
             {
-                for (var x0 = px - size; x0 <= px + size; x0++)
-                for (var y0 = py - size; y0 <= py + size; y0++)
+                if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
                 {
-                    if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
-                    {
-                        var ptr = (uint*) buf.Address;
-                        ptr += (uint) (width * y0 + x0);
+                    var ptr = (uint*) buf.Address;
+                    ptr += (uint) (width * y0 + x0);
 
-                        *ptr = pixel;
-                    }
+                    *ptr = pixel;
                 }
             }
         }
@@ -100,39 +98,38 @@ namespace AvaloniaCoreSnow
             var px = (int)(x * width);
             var py = (int)(y * height);
 
-            using (var img = Image.Load(fileName))
-            using (var buf = Bitmap.Lock())
+            using var img = Image.Load(fileName);
+            using var buf = Bitmap.Lock();
+
+            var w = Math.Min(width - px, img.Width);
+            var h = Math.Min(height - py, img.Height);
+
+            var ptr = (uint*)buf.Address;
+
+            // Move snow out of the picture rectangle.
+            for (var i = 0; i < _flakes.Length; i++)
             {
-                var w = Math.Min(width - px, img.Width);
-                var h = Math.Min(height - py, img.Height);
+                ref var f = ref _flakes[i];
 
-                var ptr = (uint*)buf.Address;
-
-                // Move snow out of the picture rectangle.
-                for (var i = 0; i < _flakes.Length; i++)
+                if (f.X > px && f.Y > py && f.X < px + w && f.Y < py + h)
                 {
-                    ref var f = ref _flakes[i];
-
-                    if (f.X > px && f.Y > py && f.X < px + w && f.Y < py + h)
-                    {
-                        // Clear pixel and reset flake to top.
-                        *(ptr + f.Y * width + f.X) = 0;
-                        InitFlake(ref f);
-                    }
+                    // Clear pixel and reset flake to top.
+                    *(ptr + f.Y * width + f.X) = 0;
+                    InitFlake(ref f);
                 }
+            }
 
-                // Load picture.
-                for (var i = 0; i < w; i++)
-                for (var j = 0; j < h; j++)
+            // Load picture.
+            for (var i = 0; i < w; i++)
+            for (var j = 0; j < h; j++)
+            {
+                var pix = img[i, j];
+
+                // Alpha threshold: transparent pixels don't work with snow logic.
+                if (pix.A > 200)
                 {
-                    var pix = img[i, j];
-
-                    // Alpha threshold: transparent pixels don't work with snow logic.
-                    if (pix.A > 200)
-                    {
-                        var pixPtr = ptr + (j + py) * width + i + px;
-                        *pixPtr = (uint) (pix.B | pix.G << 8 | pix.R << 16 | byte.MaxValue << 24);
-                    }
+                    var pixPtr = ptr + (j + py) * width + i + px;
+                    *pixPtr = (uint) (pix.B | pix.G << 8 | pix.R << 16 | byte.MaxValue << 24);
                 }
             }
         }
@@ -167,32 +164,31 @@ namespace AvaloniaCoreSnow
 
         private unsafe void ResizeFlakes(int newCount)
         {
-            using (var buf = Bitmap.Lock())
+            using var buf = Bitmap.Lock();
+            var ptr = (uint*)buf.Address;
+
+            var old = _flakes;
+            var oldCount = _flakeCount;
+            _flakes = new Flake[newCount];
+
+            if (newCount < oldCount)
             {
-                var ptr = (uint*)buf.Address;
-                var old = _flakes;
-                var oldCount = _flakeCount;
-                _flakes = new Flake[newCount];
-
-                if (newCount < oldCount)
+                // Remove extra flakes, trim array.
+                for (var i = newCount; i < oldCount; i++)
                 {
-                    // Remove extra flakes, trim array.
-                    for (var i = newCount; i < oldCount; i++)
-                    {
-                        *(ptr + old[i].X + old[i].Y * Bitmap.PixelSize.Width) = 0;
-                    }
-
-                    Array.Copy(old, _flakes, newCount);
+                    *(ptr + old[i].X + old[i].Y * Bitmap.PixelSize.Width) = 0;
                 }
-                else
-                {
-                    // Add more flakes.
-                    Array.Copy(old, _flakes, oldCount);
 
-                    for (var i = oldCount; i < newCount; i++)
-                    {
-                        InitFlake(ref _flakes[i]);
-                    }
+                Array.Copy(old, _flakes, newCount);
+            }
+            else
+            {
+                // Add more flakes.
+                Array.Copy(old, _flakes, oldCount);
+
+                for (var i = oldCount; i < newCount; i++)
+                {
+                    InitFlake(ref _flakes[i]);
                 }
             }
 
@@ -201,24 +197,23 @@ namespace AvaloniaCoreSnow
 
         private unsafe void ResetBitmap()
         {
-            using (var buf = Bitmap.Lock())
+            using var buf = Bitmap.Lock();
+
+            var ptr = (uint*)buf.Address;
+
+            var w = Bitmap.PixelSize.Width;
+            var h = Bitmap.PixelSize.Height;
+
+            // Clear.
+            for (var i = 0; i < w * (h - 1); i++)
             {
-                var ptr = (uint*)buf.Address;
+                *(ptr + i) = 0;
+            }
 
-                var w = Bitmap.PixelSize.Width;
-                var h = Bitmap.PixelSize.Height;
-
-                // Clear.
-                for (var i = 0; i < w * (h - 1); i++)
-                {
-                    *(ptr + i) = 0;
-                }
-
-                // Draw bottom line.
-                for (var i = w * (h - 1); i < w * h ; i++)
-                {
-                    *(ptr + i) = uint.MaxValue;
-                }
+            // Draw bottom line.
+            for (var i = w * (h - 1); i < w * h ; i++)
+            {
+                *(ptr + i) = uint.MaxValue;
             }
         }
 
@@ -232,16 +227,14 @@ namespace AvaloniaCoreSnow
                     var bmp = Bitmap;
                     var w = bmp.PixelSize.Width;
 
-                    using (var buf = bmp.Lock())
+                    using var buf = bmp.Lock();
+                    var ptr = (uint*) buf.Address;
+
+                    var flakes = _flakes;
+
+                    for (var i = 0; i < flakes.Length; i++)
                     {
-                        var ptr = (uint*) buf.Address;
-
-                        var flakes = _flakes;
-
-                        for (var i = 0; i < flakes.Length; i++)
-                        {
-                            MoveFlake(ref flakes[i], ptr, w);
-                        }
+                        MoveFlake(ref flakes[i], ptr, w);
                     }
                 }
 
