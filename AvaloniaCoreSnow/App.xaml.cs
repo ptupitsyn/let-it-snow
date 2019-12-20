@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml;
 
@@ -7,26 +8,20 @@ namespace AvaloniaCoreSnow
 {
     class App : Application
     {
-
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
             base.Initialize();
         }
-
-        static void Main(string[] args)
+        
+        public override void OnFrameworkInitializationCompleted()
         {
-            AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .Start<MainWindow>();
-        }
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow = new MainWindow();
+            }
 
-        public static void AttachDevTools(Window window)
-        {
-#if DEBUG
-            DevTools.Attach(window);
-#endif
+            base.OnFrameworkInitializationCompleted();
         }
-
     }
 }
