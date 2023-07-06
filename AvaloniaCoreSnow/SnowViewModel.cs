@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -8,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
+using Color = Avalonia.Media.Color;
 
 namespace AvaloniaCoreSnow
 {
@@ -89,7 +91,7 @@ namespace AvaloniaCoreSnow
             }
         }
 
-        public unsafe void LoadFile(string fileName, double x, double y)
+        public unsafe void LoadFile(Stream file, double x, double y)
         {
             // Convert relative to absolute.
             var width = Bitmap.PixelSize.Width;
@@ -98,7 +100,7 @@ namespace AvaloniaCoreSnow
             var px = (int)(x * width);
             var py = (int)(y * height);
 
-            using var img = Image.Load(fileName);
+            using var img = Image.Load(file);
             using var buf = Bitmap.Lock();
 
             var w = Math.Min(width - px, img.Width);
