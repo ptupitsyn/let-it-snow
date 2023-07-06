@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
+using Color = Avalonia.Media.Color;
 
 namespace AvaloniaCoreSnow
 {

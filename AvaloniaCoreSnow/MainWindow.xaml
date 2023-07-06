@@ -27,7 +27,7 @@
                 <Slider Value="{Binding FlakeCount, Mode=TwoWay}" Minimum="500" Maximum="9000" Width="100" />
             </StackPanel>
 
-            <ListBox Items="{Binding Brushes}" SelectedItem="{Binding SelectedBrush, Mode=TwoWay}"
+            <ListBox ItemsSource="{Binding Brushes}" SelectedItem="{Binding SelectedBrush, Mode=TwoWay}"
                      Background="Transparent" Margin="5">
                 <ListBox.ItemTemplate>
                     <DataTemplate>

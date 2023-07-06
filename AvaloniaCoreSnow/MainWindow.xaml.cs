@@ -1,23 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
+using Avalonia.Remote.Protocol.Input;
 
 namespace AvaloniaCoreSnow
 {
     public class MainWindow : Window
     {
         private SnowViewModel _viewModel;
-        private IControl _img;
+        private Image _img;
 
         public MainWindow()
         {
             InitializeComponent();
-            this.AttachDevTools();
 
             DataContext = _viewModel;
         }
@@ -26,18 +23,20 @@ namespace AvaloniaCoreSnow
         {
             AvaloniaXamlLoader.Load(this);
 
-            _img = ((Grid) Content).Children.First();
+            _img = (Image)((Grid) Content)!.Children.First();
             _img.PointerMoved += Image_PointerMoved;
             _img.PointerPressed += Img_PointerPressed;
 
             // Delegate is called from bg thread, use synchronous call to avoid concurrency issues within Avalonia.
             _viewModel = new SnowViewModel(() =>
-                Dispatcher.UIThread.InvokeAsync(() => _img.InvalidateVisual()).Wait());
+            {
+                // Dispatcher.UIThread.InvokeAsync((Action)(() => _img.InvalidateVisual()));
+            });
         }
 
         private void Image_PointerMoved(object sender, PointerEventArgs e)
         {
-            if (e.InputModifiers.HasFlag(InputModifiers.LeftMouseButton))
+            if (e.KeyModifiers.HasFlag(InputModifiers.LeftMouseButton))
             {
                 var (x, y) = GetScaledPosition(e, _img);
 
@@ -47,7 +46,7 @@ namespace AvaloniaCoreSnow
 
         private async void Img_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Right && e.ClickCount == 1)
+            if (e.KeyModifiers.HasFlag(InputModifiers.RightMouseButton) && e.ClickCount == 1)
             {
                 var (x, y) = GetScaledPosition(e, _img);
 
@@ -70,7 +69,7 @@ namespace AvaloniaCoreSnow
             }
         }
 
-        private static (double x, double y) GetScaledPosition(PointerEventArgs e, IVisual visual)
+        private static (double x, double y) GetScaledPosition(PointerEventArgs e, Image visual)
         {
             var pos = e.GetPosition(visual);
 
