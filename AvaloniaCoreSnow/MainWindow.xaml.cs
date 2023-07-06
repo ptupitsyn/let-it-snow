@@ -3,7 +3,6 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Remote.Protocol.Input;
 
 namespace AvaloniaCoreSnow
 {
@@ -36,7 +35,7 @@ namespace AvaloniaCoreSnow
 
         private void Image_PointerMoved(object sender, PointerEventArgs e)
         {
-            if (e.KeyModifiers.HasFlag(InputModifiers.LeftMouseButton))
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var (x, y) = GetScaledPosition(e, _img);
 
@@ -46,7 +45,8 @@ namespace AvaloniaCoreSnow
 
         private async void Img_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.KeyModifiers.HasFlag(InputModifiers.RightMouseButton) && e.ClickCount == 1)
+            var props = e.GetCurrentPoint(this).Properties;
+            if (props.IsRightButtonPressed && e.ClickCount == 1)
             {
                 var (x, y) = GetScaledPosition(e, _img);
 
@@ -62,7 +62,7 @@ namespace AvaloniaCoreSnow
 
                 var files = await dlg.ShowAsync(this);
 
-                if (files != null)
+                if (files is { Length: > 0 })
                 {
                     _viewModel.LoadFile(files.First(), x, y);
                 }
