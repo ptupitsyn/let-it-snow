@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
 namespace AvaloniaCoreSnow
@@ -51,21 +52,20 @@ namespace AvaloniaCoreSnow
             {
                 var (x, y) = GetScaledPosition(e, _img);
 
-                var dlg = new OpenFileDialog
+                var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    AllowMultiple = false,
                     Title = "Choose a picture to load",
-                    Filters = new List<FileDialogFilter>
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
                     {
-                        new FileDialogFilter {Name = "Pictures", Extensions = new List<string> {"png", "jpg"}}
+                        new FilePickerFileType("Pictures") { Patterns = new[] { "*.png", "*.jpg" } }
                     }
-                };
+                });
 
-                var files = await dlg.ShowAsync(this);
-
-                if (files is { Length: > 0 })
+                if (result is { Count: > 0 })
                 {
-                    _viewModel.LoadFile(files.First(), x, y);
+                    await using var stream = await result[0].OpenReadAsync();
+                    _viewModel.LoadFile(stream, x, y);
                 }
             }
         }
