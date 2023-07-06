@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 
 namespace AvaloniaCoreSnow
 {
@@ -27,10 +29,9 @@ namespace AvaloniaCoreSnow
             _img.PointerPressed += Img_PointerPressed;
 
             // Delegate is called from bg thread, use synchronous call to avoid concurrency issues within Avalonia.
-            _viewModel = new SnowViewModel(() =>
-            {
-                // Dispatcher.UIThread.InvokeAsync((Action)(() => _img.InvalidateVisual()));
-            });
+            _viewModel = new SnowViewModel(
+                () => Dispatcher.UIThread.Invoke((Action)(
+                    () => _img.InvalidateVisual())));
         }
 
         private void Image_PointerMoved(object sender, PointerEventArgs e)
